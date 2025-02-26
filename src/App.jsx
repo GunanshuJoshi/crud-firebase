@@ -47,7 +47,7 @@ const App = () => {
     if (!edit.id || !edit.name || !edit.age) return;
     await updateDoc(doc(db, "crud", edit.id), {
       name: edit.name,
-      age: edit.age,
+      age: parseInt(edit.age),
     });
     setEdit({ edit: false, name: "", age: "", id: "" });
     getData();
