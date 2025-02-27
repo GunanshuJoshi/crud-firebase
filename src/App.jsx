@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { db } from "./utils/firebase";
 import {
   collection,
@@ -8,16 +8,23 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
+import { AuthContext } from "./context/AuthContext";
+import { useNavigate } from "react-router";
 
 const App = () => {
+  const { login, email, setEmail, setLogin } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [ls, setLs] = useState([]);
   const [edit, setEdit] = useState({ edit: false, name: "", age: "", id: "" });
 
   useEffect(() => {
+    if (!login) {
+      navigate("/signin");
+    }
     getData();
-  }, []);
+  }, [login]);
 
   const getData = async () => {
     const data = await getDocs(collection(db, "crud"));
@@ -52,16 +59,29 @@ const App = () => {
     setEdit({ edit: false, name: "", age: "", id: "" });
     getData();
   };
-
+  const handleLogout = () => {
+    setEmail("");
+    setLogin(false);
+  };
   return (
-    <div className="bg-indigo-200 h-screen flex flex-col items-center p-5">
-      <h1 className="text-2xl  md:text-4xl lg:text-5xl font-bold mb-4">
-        Enter Your Name & Age
+    <div className="bg-indigo-100 h-screen flex flex-col items-center p-5">
+      <header className="w-full flex flex-col md:flex-row justify-between items-center bg-white shadow-md p-2 md:p-4 rounded-md max-w-md ">
+        <span className="text-gray-700 font-medium mb-5">{email}</span>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </header>
+
+      <h1 className="text-3xl max-w-lg md:text-4xl lg:text-5xl font-bold text-gray-800 mt-6">
+        Add New User
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="w-[90%] md:w-80 bg-sky-300 p-4 rounded-md"
+        className="w-full max-w-md bg-white p-6 mt-4 rounded-lg shadow-md"
       >
         <input
           type="text"
@@ -69,7 +89,7 @@ const App = () => {
           placeholder="Enter Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
+          className="w-full mb-3 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           type="number"
@@ -77,11 +97,11 @@ const App = () => {
           placeholder="Enter Age"
           value={age}
           onChange={(e) => setAge(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
+          className="w-full mb-3 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition"
         >
           Submit
         </button>
@@ -96,31 +116,31 @@ const App = () => {
             type="text"
             value={edit.name}
             onChange={(e) => setEdit({ ...edit, name: e.target.value })}
-            className="w-full mb-2 p-2 border rounded"
+            className="w-full mb-3 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
             type="number"
             value={edit.age}
             onChange={(e) => setEdit({ ...edit, age: e.target.value })}
-            className="w-full mb-2 p-2 border rounded"
+            className="w-full mb-3 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <button
             type="submit"
-            className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+            className="w-full bg-green-500 text-white p-3 rounded-md hover:bg-green-600 transition"
           >
             Update
           </button>
         </form>
       )}
 
-      <div className="my-4 w-[90%] md:w-80 overflow-auto">
+      <div className="w-full max-w-md mt-6 overflow-auto">
         {ls.map((item) => (
           <div
             key={item.id}
-            className="flex justify-between bg-white p-2 my-2 rounded-md shadow-md"
+            className="flex justify-between items-center bg-white p-4 my-3 rounded-lg shadow-md"
           >
             <div>
-              <p className="font-bold">{item.name}</p>
+              <p className="font-semibold text-lg">{item.name}</p>
               <p className="text-gray-600">Age: {item.age}</p>
             </div>
             <div className="flex space-x-2">
@@ -133,13 +153,13 @@ const App = () => {
                     id: item.id,
                   })
                 }
-                className="bg-green-400 p-1 rounded text-white hover:bg-green-500"
+                className="bg-green-400 px-3 py-1 rounded text-white hover:bg-green-500 transition"
               >
                 Edit
               </button>
               <button
                 onClick={() => deleteData(item.id)}
-                className="bg-red-500 p-1 rounded text-white hover:bg-red-600"
+                className="bg-red-500 px-3 py-1 rounded text-white hover:bg-red-600 transition"
               >
                 Remove
               </button>
